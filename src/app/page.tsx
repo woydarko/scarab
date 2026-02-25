@@ -198,6 +198,8 @@ export default function Home() {
             </div>
             <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
               <a href="#how" style={{fontFamily:'IBM Plex Mono',fontSize:'12px',letterSpacing:'2px',color:'var(--text-muted)',textDecoration:'none',padding:'8px 16px',textTransform:'uppercase'}}>How it works</a>
+              <Link href="/campaigns" style={{fontFamily:'IBM Plex Mono',fontSize:'12px',letterSpacing:'2px',color:'var(--text-muted)',textDecoration:'none',padding:'8px 16px',textTransform:'uppercase'}}>Campaigns</Link>
+              <Link href="/tutorial" style={{fontFamily:'IBM Plex Mono',fontSize:'12px',letterSpacing:'2px',color:'var(--text-muted)',textDecoration:'none',padding:'8px 16px',textTransform:'uppercase'}}>Tutorial</Link>
               <Link href="/dashboard" className="btn-primary" style={{padding:'8px 20px',fontSize:'12px'}}>Launch App</Link>
             </div>
           </div>

@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const repo = await prisma.repo.create({
-      data: { githubRepoUrl, ownerWallet },
+      data: { githubRepoUrl, ownerWallet, category: category || "web", description: description || "" },
     })
     return NextResponse.json(repo, { status: 201 })
   } catch {

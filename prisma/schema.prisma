@@ -11,6 +11,8 @@ model Repo {
   id             String       @id @default(cuid())
   githubRepoUrl  String       @unique
   ownerWallet    String
+  category       String       @default("web")
+  description    String       @default("")
   createdAt      DateTime     @default(now())
   submissions    Submission[]
 }

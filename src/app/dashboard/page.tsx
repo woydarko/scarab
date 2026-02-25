@@ -40,20 +40,17 @@ export default function Dashboard() {
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [repoUrl, setRepoUrl] = useState('')
   const [wallet, setWallet] = useState('')
+  const [category, setCategory] = useState('web')
+  const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
   const [activeTab, setActiveTab] = useState<'overview' | 'submissions'>('overview')
   const [loadingSubmissions, setLoadingSubmissions] = useState(false)
-  const [treasury, setTreasury] = useState<{eth: string, usdc: string, address: string} | null>(null)
 
   useEffect(() => {
-    if (session) { fetchRepos(); fetchSubmissions(); fetchTreasury() }
+    if (session) { fetchRepos(); fetchSubmissions() }
   }, [session])
 
-  async function fetchTreasury() {
-    const res = await fetch('/api/treasury')
-    if (res.ok) setTreasury(await res.json())
-  }
 
   async function fetchRepos() {
     const res = await fetch('/api/repos')
@@ -73,10 +70,10 @@ export default function Dashboard() {
     const res = await fetch('/api/repos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ githubRepoUrl: repoUrl, ownerWallet: wallet }),
+      body: JSON.stringify({ githubRepoUrl: repoUrl, ownerWallet: wallet, category, description }),
     })
     const data = await res.json()
-    if (res.ok) { setMsg('success'); setRepoUrl(''); setWallet(''); fetchRepos() }
+    if (res.ok) { setMsg('success'); setRepoUrl(''); setWallet(''); setCategory('web'); setDescription(''); fetchRepos() }
     else setMsg(data.error || 'Failed')
     setLoading(false)
   }
@@ -182,7 +179,7 @@ export default function Dashboard() {
           </div>
 
           {/* Stats */}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'12px',marginBottom:'16px'}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:'12px',marginBottom:'16px'}}>
             {[
               { label:'Repos', value: repos.length, emoji:'📦', color:'rgba(248,222,34,0.8)' },
               { label:'Submissions', value: submissions.length, emoji:'🐛', color:'rgba(248,222,34,0.8)' },
@@ -197,26 +194,6 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* Treasury */}
-          <div className="glass" style={{borderRadius:'16px',padding:'16px 24px',marginBottom:'28px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-            <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-              <span style={{fontSize:'18px'}}>🏛️</span>
-              <div>
-                <p style={{fontSize:'11px',color:'rgba(248,222,34,0.35)',letterSpacing:'2px',textTransform:'uppercase',marginBottom:'2px'}}>Treasury Wallet</p>
-                <p style={{fontFamily:'monospace',fontSize:'12px',color:'rgba(248,222,34,0.4)'}}>{treasury?.address ? `${treasury.address.slice(0,10)}...${treasury.address.slice(-6)}` : '—'}</p>
-              </div>
-            </div>
-            <div style={{display:'flex',gap:'32px'}}>
-              <div style={{textAlign:'right'}}>
-                <p style={{fontSize:'11px',color:'rgba(248,222,34,0.35)',letterSpacing:'1px',marginBottom:'2px'}}>ETH</p>
-                <p style={{fontFamily:'Playfair Display',fontSize:'18px',fontWeight:'700',color:'rgba(248,222,34,0.7)'}}>{treasury ? parseFloat(treasury.eth).toFixed(4) : '—'}</p>
-              </div>
-              <div style={{textAlign:'right'}}>
-                <p style={{fontSize:'11px',color:'rgba(248,222,34,0.35)',letterSpacing:'1px',marginBottom:'2px'}}>USDC</p>
-                <p style={{fontFamily:'Playfair Display',fontSize:'18px',fontWeight:'700',color:'#F8DE22'}}>${treasury ? parseFloat(treasury.usdc).toFixed(2) : '—'}</p>
-              </div>
-            </div>
-          </div>
 
           {/* Tabs */}
           <div style={{display:'flex',gap:'4px',marginBottom:'28px',background:'rgba(144,12,63,0.04)',border:'1px solid rgba(248,222,34,0.08)',borderRadius:'100px',padding:'4px',width:'fit-content'}}>
@@ -244,6 +221,21 @@ export default function Dashboard() {
                   <div style={{marginBottom:'16px'}}>
                     <label style={{fontSize:'12px',color:'rgba(248,222,34,0.4)',display:'block',marginBottom:'8px',letterSpacing:'0.5px'}}>GITHUB REPO URL</label>
                     <input type="url" value={repoUrl} onChange={e => setRepoUrl(e.target.value)} placeholder="https://github.com/username/repo" required className="input-field" />
+                  </div>
+                  <div style={{marginBottom:'16px'}}>
+                    <label style={{fontSize:'12px',color:'rgba(248,222,34,0.4)',display:'block',marginBottom:'8px',letterSpacing:'0.5px'}}>CATEGORY</label>
+                    <select value={category} onChange={e => setCategory(e.target.value)} className="input-field" style={{cursor:'pointer'}}>
+                      <option value="web">Web App</option>
+                      <option value="mobile">Mobile</option>
+                      <option value="api">API</option>
+                      <option value="ai">AI Agent</option>
+                      <option value="defi">DeFi</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div style={{marginBottom:'16px'}}>
+                    <label style={{fontSize:'12px',color:'rgba(248,222,34,0.4)',display:'block',marginBottom:'8px',letterSpacing:'0.5px'}}>DESCRIPTION</label>
+                    <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief description of your project..." className="input-field" />
                   </div>
                   <div style={{marginBottom:'24px'}}>
                     <label style={{fontSize:'12px',color:'rgba(248,222,34,0.4)',display:'block',marginBottom:'8px',letterSpacing:'0.5px'}}>WALLET ADDRESS</label>
@@ -317,6 +309,7 @@ export default function Dashboard() {
                   const severityColor = sub.severity==='high' ? '#C70039' : sub.severity==='medium' ? '#F8DE22' : '#6aaa5a'
                   const statusMap: Record<string, {color:string,label:string,bg:string}> = {
                     paid:     {color:'#6aaa5a', label:'✓ Paid',     bg:'rgba(90,138,74,0.12)'},
+                    duplicate:{color:'rgba(248,222,34,0.4)', label:'⚠ Duplicate', bg:'rgba(248,222,34,0.05)'},
                     rejected: {color:'#C70039', label:'✗ Rejected', bg:'rgba(200,106,75,0.12)'},
                     judging:  {color:'#F8DE22', label:'⏳ Judging', bg:'rgba(248,222,34,0.08)'},
                     paying:   {color:'#F8DE22', label:'⏳ Paying',  bg:'rgba(248,222,34,0.08)'},
