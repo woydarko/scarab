@@ -21,7 +21,7 @@ async function fetchRepoCode(repoUrl: string): Promise<string> {
     const codeExts = ['.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.rs', '.java', '.php', '.rb']
     const codeFiles = tree.tree
       .filter(f => f.type === 'blob' && codeExts.some(ext => f.path?.endsWith(ext)))
-      .slice(0, 10)
+      .slice(0, 15)
 
     // fetch content of each file
     const contents = await Promise.all(
@@ -29,7 +29,7 @@ async function fetchRepoCode(repoUrl: string): Promise<string> {
         try {
           const { data } = await octokit.repos.getContent({ owner, repo, path: file.path! })
           if ('content' in data) {
-            const decoded = Buffer.from(data.content, 'base64').toString('utf-8').slice(0, 500)
+            const decoded = Buffer.from(data.content, 'base64').toString('utf-8').slice(0, 2000)
             return '// ' + file.path + '\n' + decoded
           }
         } catch { return '' }
@@ -75,8 +75,10 @@ export async function judgeIssue(title: string, body: string, repoUrl: string) {
     '=== SOURCE CODE ===',
     repoCode || '(no code available)',
     '',
-    'Respond ONLY with JSON:',
-    '{"verdict":"valid","severity":"medium","reason":"brief explanation max 120 chars"}',
+    'YOUR RESPONSE MUST BE EXACTLY ONE LINE OF JSON. NO prose. NO explanation. NO markdown. NO code blocks.',
+    'OUTPUT FORMAT (copy exactly): {"verdict":"valid","severity":"medium","reason":"max 100 chars"}',
+    'verdict must be: valid OR invalid',
+    'severity must be: low OR medium OR high (only if valid)',
   ].join('\n')
 
   try {

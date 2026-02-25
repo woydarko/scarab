@@ -43,6 +43,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
   const [activeTab, setActiveTab] = useState<'overview' | 'submissions'>('overview')
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false)
   const [treasury, setTreasury] = useState<{eth: string, usdc: string, address: string} | null>(null)
 
   useEffect(() => {
@@ -60,8 +61,10 @@ export default function Dashboard() {
   }
 
   async function fetchSubmissions() {
+    setLoadingSubmissions(true)
     const res = await fetch('/api/submissions')
     if (res.ok) setSubmissions(await res.json())
+    setLoadingSubmissions(false)
   }
 
   async function registerRepo(e: React.FormEvent) {
