@@ -58,7 +58,7 @@ async function closeIssueWithLabel(repoUrl: string, issueNumber: number, label: 
 async function checkDuplicate(repoId: string, title: string): Promise<string | null> {
   // cari submission paid dengan judul mirip di repo yang sama
   const existing = await prisma.submission.findMany({
-    where: { repoId, status: 'paid' },
+    where: { repoId, status: { in: ['paid', 'judging', 'paying'] } },
     select: { issueTitle: true, githubIssueId: true },
   })
 
@@ -190,9 +190,10 @@ async function judgeAndPay(
       },
     })
 
-    // close issue + label
-    await closeIssueWithLabel(repoUrl, issue.number, 'bounty-paid')
-
+    // close issue + label HANYA kalau payment success
+    if (tx.success) {
+      await closeIssueWithLabel(repoUrl, issue.number, 'bounty-paid')
+    }
 
     // comment paid
     await commentOnIssue(repoUrl, issue.number,

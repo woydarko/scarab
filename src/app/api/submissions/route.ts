@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export async function GET() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const submissions = await prisma.submission.findMany({
     orderBy: { createdAt: 'desc' },
-    take: 50,
-    include: {
-      repo: true,
-    },
+    take: 100,
+    include: { repo: true },
   })
 
   return NextResponse.json(submissions)

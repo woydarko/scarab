@@ -47,6 +47,10 @@ async function fetchRepoCode(repoUrl: string): Promise<string> {
 export async function judgeIssue(title: string, body: string, repoUrl: string) {
   const repoCode = await fetchRepoCode(repoUrl)
 
+  // sanitize input - prevent prompt injection
+  const safeTitle = title.slice(0, 200).replace(/[`<>]/g, '')
+  const safeBody = (body || '').slice(0, 2000).replace(/ignore previous|forget|system:|you are now|disregard/gi, '[redacted]')
+
   const prompt = [
     'You are a strict bug bounty judge with access to the actual source code.',
     '',
@@ -69,8 +73,8 @@ export async function judgeIssue(title: string, body: string, repoUrl: string) {
     '- low: minor bugs, UI issues, typos',
     '',
     '=== BUG REPORT ===',
-    'Title: ' + title,
-    'Body: ' + body,
+    'Title: ' + safeTitle,
+    'Body: ' + safeBody,
     '',
     '=== SOURCE CODE ===',
     repoCode || '(no code available)',
@@ -82,7 +86,11 @@ export async function judgeIssue(title: string, body: string, repoUrl: string) {
   ].join('\n')
 
   try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30000)
+
     const response = await fetch('https://api.zo.computer/zo/ask', {
+      signal: controller.signal,
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + process.env.ZO_API_KEY,
@@ -94,6 +102,7 @@ export async function judgeIssue(title: string, body: string, repoUrl: string) {
       }),
     })
 
+    clearTimeout(timeout)
     const data = await response.json()
     console.log('Zo response:', JSON.stringify(data).slice(0, 300))
 
