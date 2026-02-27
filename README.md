@@ -69,12 +69,12 @@ Block submission            Comment "Received"
                                          Comment "Paid! [txHash]"
 ```
 
-### Bounty Tiers
+### Bounty Tiers (Development)
 | Severity | Bounty | Description |
 |----------|--------|-------------|
 | LOW | $0.10 USDC | Minor bugs, UI issues, typos |
-| MEDIUM | $0.30 USDC | Broken functionality, wrong behavior |
-| HIGH | $0.50 USDC | Security issues, crashes, data loss |
+| MEDIUM | $0.10 USDC | Broken functionality, wrong behavior |
+| HIGH | $0.10 USDC | Security issues, crashes, data loss |
 
 ---
 
