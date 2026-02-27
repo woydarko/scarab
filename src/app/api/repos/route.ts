@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const { githubRepoUrl, ownerWallet } = await req.json()
+  const { githubRepoUrl, ownerWallet, category, description } = await req.json()
 
   if (!githubRepoUrl || !ownerWallet) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 })
