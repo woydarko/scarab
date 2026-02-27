@@ -1,7 +1,7 @@
 import { Octokit } from '@octokit/rest'
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
-const BOUNTY_AMOUNTS = { low: 0.1, medium: 0.1, high: 0.1 }
+const BOUNTY_AMOUNTS = { low: 0.1, medium: 0.3, high: 0.5 }
 
 async function fetchRepoCode(repoUrl: string): Promise<string> {
   try {

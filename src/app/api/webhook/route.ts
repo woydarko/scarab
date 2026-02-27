@@ -26,6 +26,35 @@ async function commentOnIssue(repoUrl: string, issueNumber: number, body: string
   }
 }
 
+async function closeIssueWithLabel(repoUrl: string, issueNumber: number, label: string) {
+  try {
+    const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/)
+    if (!match) return
+    const owner = match[1]
+    const repo = match[2].replace('.git', '')
+
+    // buat label kalau belum ada
+    try {
+      await octokit.issues.createLabel({
+        owner, repo,
+        name: label,
+        color: label === 'bounty-paid' ? '6aaa5a' : 'C70039',
+        description: label === 'bounty-paid' ? 'Bug bounty paid via Scarab' : 'Bug report rejected by Scarab AI',
+      })
+    } catch {}
+
+    // tambah label
+    await octokit.issues.addLabels({ owner, repo, issue_number: issueNumber, labels: [label] })
+
+    // close issue kalau paid
+    if (label === 'bounty-paid') {
+      await octokit.issues.update({ owner, repo, issue_number: issueNumber, state: 'closed' })
+    }
+  } catch (e) {
+    console.error('closeIssue error:', e)
+  }
+}
+
 async function checkDuplicate(repoId: string, title: string): Promise<string | null> {
   // cari submission paid dengan judul mirip di repo yang sama
   const existing = await prisma.submission.findMany({
@@ -161,6 +190,10 @@ async function judgeAndPay(
       },
     })
 
+    // close issue + label
+    await closeIssueWithLabel(repoUrl, issue.number, 'bounty-paid')
+
+
     // comment paid
     await commentOnIssue(repoUrl, issue.number,
       '## Scarab Bug Bounty\n\n' +
@@ -175,6 +208,10 @@ async function judgeAndPay(
       'USDC has been sent to your wallet on Base mainnet.'
     )
   } else {
+    // label rejected
+    await closeIssueWithLabel(repoUrl, issue.number, 'bounty-invalid')
+
+
     // comment rejected
     await commentOnIssue(repoUrl, issue.number,
       '## Scarab Bug Bounty\n\n' +

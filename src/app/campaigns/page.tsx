@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Navbar from '@/components/Navbar'
 
 interface Campaign {
   id: string
@@ -67,18 +68,7 @@ export default function Campaigns() {
 
       <div style={{minHeight:'100vh',background:'#0D0608',color:'#F8DE22',position:'relative',zIndex:1}}>
 
-        {/* Nav */}
-        <nav style={{borderBottom:'1px solid rgba(248,222,34,0.07)',padding:'14px 32px',display:'flex',alignItems:'center',justifyContent:'space-between',backdropFilter:'blur(20px)',background:'rgba(13,6,8,0.85)',position:'sticky',top:0,zIndex:50}}>
-          <Link href="/" style={{display:'flex',alignItems:'center',gap:'8px',textDecoration:'none'}}>
-            <div style={{width:'28px',height:'28px',borderRadius:'50%',background:'linear-gradient(135deg,#900C3F,#F94C10)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px'}}>🪲</div>
-            <span style={{fontFamily:'Playfair Display',fontSize:'17px',fontWeight:'700',color:'#F8DE22',letterSpacing:'-0.5px'}}>Scarab</span>
-          </Link>
-          <div style={{display:'flex',alignItems:'center',gap:'16px'}}>
-            <Link href="/campaigns" style={{fontFamily:'IBM Plex Mono',fontSize:'11px',letterSpacing:'2px',color:'#F8DE22',textDecoration:'none',textTransform:'uppercase'}}>Campaigns</Link>
-            <Link href="/tutorial" style={{fontFamily:'IBM Plex Mono',fontSize:'11px',letterSpacing:'2px',color:'rgba(248,222,34,0.4)',textDecoration:'none',textTransform:'uppercase'}}>Tutorial</Link>
-            <Link href="/dashboard" className="btn-primary" style={{padding:'7px 16px',fontSize:'11px'}}>Dashboard</Link>
-          </div>
-        </nav>
+        <Navbar />
 
         <div style={{maxWidth:'1000px',margin:'0 auto',padding:'56px 24px'}}>
 
