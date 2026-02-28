@@ -99,16 +99,18 @@ export async function judgeIssue(title: string, body: string, repoUrl: string) {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 45000)
 
-    const response = await fetch('https://api.zo.computer/zo/ask', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       signal: controller.signal,
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + process.env.ZO_API_KEY,
+        'Authorization': 'Bearer ' + process.env.OPENROUTER_API_KEY,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://scarab-one.vercel.app',
       },
       body: JSON.stringify({
-        input: prompt,
-        model_name: 'openrouter:google/gemini-flash-1.5',
+        model: 'google/gemini-flash-1.5',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 200,
       }),
     })
 
@@ -116,7 +118,7 @@ export async function judgeIssue(title: string, body: string, repoUrl: string) {
     const data = await response.json()
     console.log('Zo response:', JSON.stringify(data).slice(0, 300))
 
-    const raw = (data.output || '').trim()
+    const raw = (data.choices?.[0]?.message?.content || '').trim()
     const jsonMatch = raw.match(/\{[\s\S]*\}/)
     if (!jsonMatch) throw new Error('No JSON in response')
     const parsed = JSON.parse(jsonMatch[0])
