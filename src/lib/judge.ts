@@ -108,7 +108,7 @@ export async function judgeIssue(title: string, body: string, repoUrl: string) {
       },
       body: JSON.stringify({
         input: prompt,
-        model_name: 'openrouter:z-ai/glm-5',
+        model_name: 'openrouter:google/gemini-flash-1.5',
       }),
     })
 
