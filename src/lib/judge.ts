@@ -9,26 +9,36 @@ async function fetchRepoCode(repoUrl: string): Promise<string> {
     if (!match) return ''
     const owner = match[1]
     const repo = match[2].replace('.git', '')
+    const token = process.env.GITHUB_TOKEN
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'Scarab-BountyBot',
+    }
+    if (token) headers['Authorization'] = 'Bearer ' + token
 
     // fetch file tree
-    const { data: tree } = await octokit.git.getTree({
-      owner, repo,
-      tree_sha: 'HEAD',
-      recursive: '1',
-    })
+    const treeRes = await fetch(
+      'https://api.github.com/repos/' + owner + '/' + repo + '/git/trees/HEAD?recursive=1',
+      { headers, signal: AbortSignal.timeout(10000) }
+    )
+    if (!treeRes.ok) return ''
+    const treeData = await treeRes.json()
 
-    // filter only code files, max 10 files
     const codeExts = ['.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.rs', '.java', '.php', '.rb']
-    const codeFiles = tree.tree
-      .filter(f => f.type === 'blob' && codeExts.some(ext => f.path?.endsWith(ext)))
-      .slice(0, 8)
+    const codeFiles = (treeData.tree || [])
+      .filter((f: {type: string, path: string}) => f.type === 'blob' && codeExts.some(ext => f.path?.endsWith(ext)))
+      .slice(0, 6)
 
-    // fetch content of each file
     const contents = await Promise.all(
-      codeFiles.map(async (file) => {
+      codeFiles.map(async (file: {path: string}) => {
         try {
-          const { data } = await octokit.repos.getContent({ owner, repo, path: file.path! })
-          if ('content' in data) {
+          const res = await fetch(
+            'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + file.path,
+            { headers, signal: AbortSignal.timeout(5000) }
+          )
+          if (!res.ok) return ''
+          const data = await res.json()
+          if (data.content) {
             const decoded = Buffer.from(data.content, 'base64').toString('utf-8').slice(0, 1000)
             return '// ' + file.path + '\n' + decoded
           }
