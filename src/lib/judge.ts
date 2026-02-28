@@ -97,7 +97,7 @@ export async function judgeIssue(title: string, body: string, repoUrl: string) {
 
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 15000)
+    const timeout = setTimeout(() => controller.abort(), 45000)
 
     const response = await fetch('https://api.zo.computer/zo/ask', {
       signal: controller.signal,
