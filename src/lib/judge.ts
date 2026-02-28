@@ -21,7 +21,7 @@ async function fetchRepoCode(repoUrl: string): Promise<string> {
     const codeExts = ['.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.rs', '.java', '.php', '.rb']
     const codeFiles = tree.tree
       .filter(f => f.type === 'blob' && codeExts.some(ext => f.path?.endsWith(ext)))
-      .slice(0, 15)
+      .slice(0, 8)
 
     // fetch content of each file
     const contents = await Promise.all(
@@ -29,7 +29,7 @@ async function fetchRepoCode(repoUrl: string): Promise<string> {
         try {
           const { data } = await octokit.repos.getContent({ owner, repo, path: file.path! })
           if ('content' in data) {
-            const decoded = Buffer.from(data.content, 'base64').toString('utf-8').slice(0, 2000)
+            const decoded = Buffer.from(data.content, 'base64').toString('utf-8').slice(0, 1000)
             return '// ' + file.path + '\n' + decoded
           }
         } catch { return '' }
@@ -37,7 +37,7 @@ async function fetchRepoCode(repoUrl: string): Promise<string> {
       })
     )
 
-    return contents.filter(Boolean).join('\n\n---\n\n').slice(0, 8000)
+    return contents.filter(Boolean).join('\n\n---\n\n').slice(0, 4000)
   } catch (e) {
     console.error('fetchRepoCode error:', e)
     return ''
@@ -49,7 +49,7 @@ export async function judgeIssue(title: string, body: string, repoUrl: string) {
 
   // sanitize input - prevent prompt injection
   const safeTitle = title.slice(0, 200).replace(/[`<>]/g, '')
-  const safeBody = (body || '').slice(0, 2000).replace(/ignore previous|forget|system:|you are now|disregard/gi, '[redacted]')
+  const safeBody = (body || '').slice(0, 1000).replace(/ignore previous|forget|system:|you are now|disregard/gi, '[redacted]')
 
   const prompt = [
     'You are a strict bug bounty judge with access to the actual source code.',
@@ -87,7 +87,7 @@ export async function judgeIssue(title: string, body: string, repoUrl: string) {
 
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
+    const timeout = setTimeout(() => controller.abort(), 15000)
 
     const response = await fetch('https://api.zo.computer/zo/ask', {
       signal: controller.signal,
